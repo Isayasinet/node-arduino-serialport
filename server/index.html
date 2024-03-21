@@ -1,47 +1,56 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Arduino Nodejs</title>
-  </head>
-  <body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node Arduino
+    </title>
+</head>
+<body>
+    <!-- Página principal con el título "Node Arduino" y un lienzo para el gráfico -->
+    <h1>Node Arduino</h1>
     <canvas id="myChart"></canvas>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
-    <script src="/socket.io/socket.io.js" charset="utf-8"></script>
+    <!-- Scripts necesarios para Chart.js y Socket.IO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.5.1/chart.min.js" charset="utf-8"></script>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js" charset="utf-8"></script>
     <script type="text/javascript">
-      const socket = io();
+        // Inicialización del socket para la comunicación en tiempo real
+        const socket = io()
 
-      var ctx = document.getElementById('myChart').getContext('2d');
-      var chart = new Chart(ctx, {
-          // The type of chart we want to create
-          type: 'line',
-
-          // The data for our dataset
-          data: {
-              labels: ["Serial"],
-              datasets: [{
-                  label: "Serial Data from Arduino",
-                  backgroundColor: 'rgb(52, 73, 94)',
-                  borderColor: 'rgb(41, 128, 185)',
-                  data: [],
-              }]
-          },
-
-          // Configuration options go here
-          options: {}
+        // Obtención del contexto del lienzo para el gráfico
+        var ctx = document.getElementById('myChart');
+        // Creación de un nuevo gráfico de tipo línea
+        var myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [], // Etiquetas del eje X
+          datasets: [{
+            label: 'Serial', // Etiqueta del dataset
+            backgroundColor: 'rgb(255, 99, 132)', // Color de fondo
+            borderColor: 'rgb(255, 99, 132)', // Color del borde
+            data: [], // Datos del gráfico
+          }]
+        },
+        option:{} // Opciones del gráfico
       });
 
-      let counter = 0 ;
-      socket.on('arduino:data', function (dataSerial) {
-        // console.log(dataSerial);
-        chart.data.labels.push(counter);
-        chart.data.datasets.forEach(dataset => {
-          dataset.data.push(dataSerial.value);
+        let counter = 0; // Contador para los datos
+        // Evento que se dispara al recibir datos del Arduino
+        socket.on('arduino:data', function(dataSerial){
+            myChart.data.labels.push(counter); // Agregar una nueva etiqueta
+            myChart.data.datasets.forEach((dataset) => {
+                dataset.data.push(dataSerial.value); // Agregar datos al dataset
+            });
+            counter++; // Incrementar el contador
+            myChart.update(); // Actualizar el gráfico
+        })
+
+        // Evento que se dispara al conectar con el servidor
+        socket.on('connect', () => {
+            socket.emit('encender'); // Enviar señal de encendido al servidor
         });
-        counter++;
-        chart.update();
-      });
     </script>
-  </body>
+</body>
 </html>
+
